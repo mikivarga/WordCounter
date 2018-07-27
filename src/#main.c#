@@ -30,8 +30,6 @@ static int dir_tree(const char *pathname, const struct stat *sbuf, int type, str
   case S_IFDIR: printf("-d "); break;
   default: printf("?");break;
     }
-  if (sbuf->st_mode & S_IFDIR)
-    printf("%d ", i++);
   //printf("%s\n", &pathname[ftwb->base]);
   //printf("%d ", i++);
   
