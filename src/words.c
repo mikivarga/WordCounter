@@ -48,12 +48,12 @@ static void add_words(char *word_tmp, t_tree *ptr)
 
 static Boolean open_gz_file(const char *patchname, t_tree *ptr)
 {
-    char cmd[4096] = "zcat /usr/share/man/man1/";//static?
+    char cmd[4096] = "zcat ";
     char word_tmp[1024];
     FILE *in;
 
 
-    memcpy(cmd + 25, patchname, strlen(patchname) + 1);
+    memcpy(cmd + 5, patchname, strlen(patchname) + 1);
     in = popen(cmd, "r");
     if (!in) {
         fprintf(stderr, "%s: popen: %s\n", patchname, strerror(errno));
