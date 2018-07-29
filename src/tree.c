@@ -106,7 +106,8 @@ static t_trnode *tr_make_node(const t_item *pi)
 
 	new_node = (t_trnode *)malloc(sizeof(t_trnode));
 	if (new_node != NULL) {
-		new_node->item = *pi;
+		strcpy(new_node->item.word, pi->word);
+		new_node->item.cnt_word = 1;
 		new_node->left = NULL;
 		new_node->right = NULL;
 	}

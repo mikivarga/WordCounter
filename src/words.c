@@ -2,7 +2,7 @@
 
 static void print_item(t_item item)
 {
-  printf("%s\t %d\n", item.word, item.cnt_word);
+  printf("%s\t %ld\n", item.word, item.cnt_word);
 }
 
 void show_words(const t_tree *ptr)
@@ -11,6 +11,14 @@ void show_words(const t_tree *ptr)
         puts("there is no words in tree!");
     else
         tr_traverse(ptr, print_item);
+}
+
+static char *check_tokens(char *word_tmp)
+{
+    while (*word_tmp && !isalpha(*word_tmp))
+        *word_tmp++;
+
+    return word_tmp;
 }
 
 static void add_words(char *word_tmp, t_tree *ptr)
@@ -24,9 +32,7 @@ static void add_words(char *word_tmp, t_tree *ptr)
         t_item item;
 
         while (*word_tmp) {
-            while (*word_tmp && !isalpha(*word_tmp)) {
-                *word_tmp++;
-            }
+            word_tmp = check_tokens(word_tmp);
             if (*word_tmp) {
                 pword = item.word;
                 while (*word_tmp && isalpha(*word_tmp)) {
@@ -35,9 +41,7 @@ static void add_words(char *word_tmp, t_tree *ptr)
                 *pword = '\0';
                 tr_add_item(&item, ptr);
             }
-            while (*word_tmp && !isalpha(*word_tmp)) {
-                *word_tmp++;
-            }
+            word_tmp = check_tokens(word_tmp);
         }
     }
 }
@@ -57,6 +61,7 @@ static Boolean open_gz_file(const char *patchname, t_tree *ptr)
     }
     while (fscanf(in, "%s", word_tmp) == 1)
         add_words(word_tmp, ptr);
+    pclose(in);//errr
     return TRUE;
 }
 

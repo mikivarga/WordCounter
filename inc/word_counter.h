@@ -12,13 +12,13 @@
 
 typedef enum { FALSE, TRUE } Boolean;
 
-#define BUF 1000
+#define BUF 100
 #define MAXITEMS 1000000
 
 typedef struct		s_item
 {
   char word[BUF];
-  int cnt_word;
+  long cnt_word;
 }			t_item;
 
 typedef struct		s_trnode
