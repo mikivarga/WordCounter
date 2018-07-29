@@ -1,53 +1,50 @@
 #ifndef WORD_COUNTER_H
 #define WORD_COUNTER_H
 
+#include <pthread.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <ctype.h>
 
 typedef enum { FALSE, TRUE } Boolean;
 
-#define BUF 25
+#define BUF 1000
+#define MAXITEMS 1000000
 
-typedef struct		s_word
+typedef struct		s_item
 {
-  char			word[BUF];
-  unsigned int		cnt_word;	
-}			t_word;
+  char word[BUF];
+  int cnt_word;
+}			t_item;
 
-typedef struct		s_tree_node
+typedef struct		s_trnode
 {
-  t_word		word;
-  struct s_tree_node	*left;
-  struct s_tree_node	*right;
-}			t_tree_node;
-
-typedef struct		s_pair
-{
-  t_tree_node		*parent;
-  t_tree_node		*child;
-}			t_pair;
+  t_item item;
+  struct s_trnode	*left;
+  struct s_trnode	*right;
+}			t_trnode;
 
 typedef struct		s_tree
 {
-  t_tree_node		*root;
-  unsigned int		size;
+  t_trnode *root;
+  int size;
 }			t_tree;
 
-void		tw_initialize(t_tree *p_tr_wrd);
-Boolean		tw_is_empty(const t_tree *p_tr_wrd);
-Boolean		tw_is_fool(const t_tree *p_tr_wrd);
-unsigned int	tw_item_count(const t_tree *p_tr_wrd);
-Boolean		tw_to_right(const t_word *p_wrd1, const t_word *p_wrd2);
-Boolean		tw_to_left(const t_word *p_wrd1, const t_word *p_wrd2);
-t_pair		tw_seek_item(const t_word *p_wrd, const t_tree *p_tr_wrd);
-Boolean		tw_add_item(const t_word  *p_wrd, t_tree *p_tr_wrd);
-Boolean		tw_delete_data(t_word *p_wrd, t_tree *p_tr_wrd);
-void		tw_delete_all(t_tree *p_tr_wrd);
-void		ft_traverse\
-(int order, t_tree *p_tr_wrd, void (*pfun)(t_word word, t_tree *));
+void		tr_initialize(t_tree *ptr);
+Boolean		tr_is_empty(const t_tree *ptr);
+Boolean		tr_is_full(const t_tree *ptr);
+unsigned int	tr_item_count(const t_tree *ptr);
+Boolean		tr_add_item(const t_item  *pi, t_tree *ptr);
+
+
+void tr_traverse(const t_tree *ptr, void (*pfun)(t_item item));
+
+Boolean open_file(const char *patchname, t_tree * ptr);
+void show_words(const t_tree *ptr);
+
 
 #endif /*WORD_COUNTER_H*/
