@@ -2,7 +2,7 @@
 
 static void print_item(t_item item)
 {
-  printf("%s\t %ld\n", item.word, item.cnt_word);
+  printf("%s\t %d\n", item.word, item.cnt_word);
 }
 
 void show_words(const t_tree *ptr)

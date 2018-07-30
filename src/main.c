@@ -5,7 +5,7 @@
 
 #include <stdarg.h>
 
-#define DEFAULT_PATH "/usr/share/man/"
+#define DEFAULT_PATH "/usr/share/man/man1"
 
 static pthread_cond_t thread_died = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t thread_mutext = PTHREAD_MUTEX_INITIALIZER;
@@ -14,19 +14,8 @@ static int tot_threads = 0;
 static int num_live = 0;
 static int num_unjoined = 0;
 
-enum tstate{
-    TS_ALIVE,
-    TS_TERMINATED,
-    TS_JOINED
-};
-
-static struct {
-    pthread_t tid;
-    enum tstate state;
-    //int sleep_time
-} *thread;
-
-t_tree words;
+t_data words;
+//t_tree words;
 
 static char *ename[] = {
     /*   0 */ "", 
@@ -116,11 +105,11 @@ static int dir_tree(const char *pathname, const struct stat *sbuf, int type, str
   //create threads
   if ((sbuf->st_mode & S_IFMT) == S_IFREG)
   //
-    open_file(&pathname[ftwb->base], &words);
+    open_file(&pathname[ftwb->base], &(words.tree));
   //if thteadJoin finish delete list
   return 0;
 }
-
+/*
 static void * thread_func(void *arg)
 {
   int idx = (int) arg;
@@ -147,14 +136,14 @@ static void * thread_func(void *arg)
   
   return NULL;
 }
-
+*/
 int main(int argc, char **argv)
 {
   int s, idx;
 
   if (argc > 2)
     usage_error(argv[0], NULL);
-  tr_initialize(&words);
+  tr_initialize(&(words.tree));
 
   /*thread = calloc(1, sizeof(*thread));
   if (thread == NULL)
@@ -172,7 +161,7 @@ int main(int argc, char **argv)
     perror("nftw");
     usage_error(argv[0], NULL);
   }
-*/
+/*
    tot_threads = 1;
     while (num_live > 0) {
         s = pthread_mutex_lock(&thread_mutext);
@@ -203,17 +192,9 @@ int main(int argc, char **argv)
             err_exit_en(s, "pthread_mutex_unlock");
 
     }
+*/
 
 
-
-
-
-
-
-
-
-
-
-  show_words(&words);
+  show_words(&(words.tree));
   return 0;
 }

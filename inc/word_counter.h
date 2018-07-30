@@ -15,7 +15,7 @@ typedef enum { FALSE, TRUE } Boolean;
 #define BUF 100
 #define MAXITEMS 1000000
 
-enum tstate{
+enum tstate {
     TS_ALIVE,
     TS_TERMINATED,
     TS_JOINED
@@ -34,7 +34,7 @@ typedef struct s_list {
 
 typedef struct		s_item {
   char word[BUF];
-  long cnt_word;
+  unsigned int cnt_word;
 }			t_item;
 
 typedef struct		s_trnode {
@@ -45,7 +45,7 @@ typedef struct		s_trnode {
 
 typedef struct		s_tree {
   t_trnode *root;
-  int size;
+  unsigned int size;
 }			t_tree;
 
 typedef struct s_data {
@@ -53,12 +53,12 @@ typedef struct s_data {
   t_list list;
 } t_data;
 
-void lst_initialize(t_list *plst);
-Boolean lst_is_empty(const t_list *plst);
-unsigned int lst_item_count(const t_list *plst);
-unsigned int lst_add_thread(t_thread thread, t_list *plist);
-void lst_traverse(const t_list, void (* pfun)(t_item item));
-void lst_delete(t_list *plist);
+void lst_initialize(t_list **plst);
+Boolean lst_is_empty(const t_list **plst);
+unsigned int lst_item_count(t_list **plst);
+Boolean lst_add_thread(t_thread thread, t_list **plst);
+void lst_traverse(t_list **plst, void ( pfun)(t_thread thread));
+void lst_delete(t_list **plst);
 
 void		tr_initialize(t_tree *ptr);
 Boolean		tr_is_empty(const t_tree *ptr);
