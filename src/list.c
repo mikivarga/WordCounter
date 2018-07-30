@@ -1,4 +1,4 @@
-#include "../inc/word_counter.h"
+/*#include "../inc/word_counter.h"
 
 static void copy_to_node(t_thread thread, t_list *lst);
 
@@ -72,4 +72,4 @@ static void copy_to_node(t_thread thread, t_list *lst)
     lst->thread.tid = thread.tid;
     lst->thread.state = thread.state;
     strcpy(lst->thread.patchname, thread.patchname); 
-}
+}*/

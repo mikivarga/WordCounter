@@ -2,7 +2,7 @@
 
 static void print_item(t_item item)
 {
-  printf("%s\t %d\n", item.word, item.cnt_word);
+  printf(" %s %d\n", item.word, item.cnt_word);
 }
 
 void show_words(const t_tree *ptr)
@@ -31,7 +31,7 @@ static void add_words(char *word_tmp, t_tree *ptr)
     else {
         t_item item;
 
-        while (*word_tmp) {
+        while (*word_tmp) {//threads
             word_tmp = check_tokens(word_tmp);
             if (*word_tmp) {
                 pword = item.word;
@@ -46,7 +46,7 @@ static void add_words(char *word_tmp, t_tree *ptr)
     }
 }
 
-static Boolean open_gz_file(const char *patchname, t_tree *ptr)
+static Boolean open_gz_file(char *patchname, t_tree *ptr)
 {
     char cmd[4096] = "zcat ";
     char word_tmp[1024];
@@ -65,7 +65,7 @@ static Boolean open_gz_file(const char *patchname, t_tree *ptr)
     return TRUE;
 }
 
-Boolean open_file(const char *patchname, t_tree *ptr)
+Boolean open_file(char *patchname, t_tree *ptr)
 {
     if (strstr(patchname, ".gz")) {
         open_gz_file(patchname, ptr);//TRUE/FALSE
