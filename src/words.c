@@ -12,7 +12,7 @@ void show_words(const t_tree *ptr)
     else
         tr_traverse(ptr, print_item);
 }
-
+/*
 static char *check_tokens(char *word_tmp)
 {
     while (*word_tmp && !isalpha(*word_tmp))
@@ -29,7 +29,7 @@ static void add_words(char *word_tmp, t_tree *ptr)
         puts("there is no а free place in a tree!");
     }
     else {
-        t_item item;
+        t_item item;//item tmp
 
         while (*word_tmp) {//threads
             word_tmp = check_tokens(word_tmp);
@@ -45,7 +45,7 @@ static void add_words(char *word_tmp, t_tree *ptr)
         }
     }
 }
-
+/
 static Boolean open_gz_file(char *patchname, t_tree *ptr)
 {
     char cmd[4096] = "zcat ";
@@ -55,19 +55,25 @@ static Boolean open_gz_file(char *patchname, t_tree *ptr)
 
     memcpy(cmd + 5, patchname, strlen(patchname) + 1);
     in = popen(cmd, "r");
+        //make threads
     if (!in) {
         fprintf(stderr, "%s: popen: %s\n", patchname, strerror(errno));
         return FALSE;
     }
     while (fscanf(in, "%s", word_tmp) == 1)
+    {
         add_words(word_tmp, ptr);
+    }
+        //join threads
     pclose(in);//errr
     return TRUE;
 }
 
 Boolean open_file(char *patchname, t_tree *ptr)
 {
+
     if (strstr(patchname, ".gz")) {
         open_gz_file(patchname, ptr);//TRUE/FALSE
     }
-}
+
+}*/

@@ -5,7 +5,7 @@
 
 #include <stdarg.h>
 
-#define DEFAULT_PATH "/usr/share/man/"
+#define DEFAULT_PATH "/usr/share/man/man1"
 
 static pthread_cond_t thread_died = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t thread_mutext = PTHREAD_MUTEX_INITIALIZER;
@@ -13,6 +13,9 @@ static pthread_mutex_t thread_mutext = PTHREAD_MUTEX_INITIALIZER;
 static int tot_threads = 0;
 static int num_live = 0;
 static int num_unjoined = 0;
+
+pthread_t t[20000];
+int i=0;
 /*
 enum tstate{
     TS_ALIVE,
@@ -26,8 +29,7 @@ static struct {
     int sleep_time
 } *thread;
 */
-t_data words;
-//t_tree words;
+t_tree words;
 
 static char *ename[] = {
     /*   0 */ "", 
@@ -111,76 +113,12 @@ static void usage_error(const char *prog_name, char *msg)
   exit(EXIT_FAILURE);
 }
 
-static int avail = 0;
-
-
-
-static void * thread_func(void *arg)
-{
-    int s;
-    s = pthread_mutex_lock(&thread_mutext);
-    if (s != 0)
-            err_exit_en(s, "pthread_mutex_loc");
-    //nftw(DEFAULT_PATH, dir_tree, 20, FTW_CHDIR);
-    open_file(str111, &(words.tree));
-    s = pthread_mutex_unlock(&thread_mutext);
-        if (s != 0)
-            err_exit_en(s, "pthread_mutex_loc");
-   s = pthread_cond_signal(&thread_died);
-    if (s != 0)
-        err_exit_en(s, "pthread_cond_signal");
-    return NULL;
-}
-
 static int dir_tree(const char *pathname, const struct stat *sbuf, int type, struct FTW *ftwb)
 {
-  (void)type;
-  pthread_t t1;
-  int s;
-
-;
-
-  if ((sbuf->st_mode & S_IFMT) == S_IFREG) {
-    strcpy(str111, &pathname[ftwb->base]);
-      s = pthread_create(&t1, NULL, thread_func, NULL);
-    if (s != 0)
-        err_exit_en(s, "pthread_creat");
-
-    //open_file(&pathname[ftwb->base], &(words.tree));
-    s = pthread_join(t1, NULL);
-    if (s != 0)
-        err_exit_en(s, "pthread_join");
-  }
+  if ((sbuf->st_mode & S_IFMT) == S_IFREG)
+    open_file(&pathname[ftwb->base], &(words));
   return 0;
 }
-/*
-static void * thread_func(void *arg)
-{
-  int idx = (int) arg;
-  int s;
-
-
-  if (nftw(DEFAULT_PATH, dir_tree, 10, FTW_CHDIR) == -1) {
-    perror("nftw");
-    usage_error(DEFAULT_PATH, NULL);  
-  }
-
-  printf("Thread %d terminating\n", idx);
-  s = pthread_mutex_lock(&thread_mutext);
-  if (s != 0)
-      err_exit_en(s, "pthread_mutex_lock");
-  num_unjoined++;
-  thread[idx].state = TS_TERMINATED;
-  s = pthread_mutex_unlock(&thread_mutext);
-  if (s != 0)
-    err_exit_en(s, "pthread_mutex_unlock");
-  s = pthread_cond_signal(&thread_died);
-  if (s != 0)
-    err_exit_en(s, "pthread_cond_signal");
-  
-  return NULL;
-}
-*/
 
 int main(int argc, char **argv)
 {
@@ -188,118 +126,14 @@ int main(int argc, char **argv)
 
   if (argc > 2)
     usage_error(argv[0], NULL);
-  tr_initialize(&(words.tree));
+  tr_initialize(&(words));
   if (nftw(argc == 1 ? DEFAULT_PATH : argv[1], dir_tree, 20, FTW_CHDIR) == -1) {
     perror("nftw");
     usage_error(argv[0], NULL);
   }
-  show_words(&(words.tree));
+
+
+
+ //show_words(&(words));
   return 0;
 }
-
-
-
-/*
-int main(void)
-{
-    pthread_t t1, t2 ;
-    void *res;
-    int s;
-tr_initialize(&(words.tree));
-    s = pthread_create(&t1, NULL, thread_func, NULL);
-    if (s != 0)
-        err_exit_en(s, "pthread_creat");
-    printf("Message from main()\n");
-    s = pthread_create(&t2, NULL, thread_func, NULL);
-    if (s != 0)
-        err_exit_en(s, "pthread_creat");
-    printf("Message from main()\n");
-    s = pthread_join(t1, &res);
-    if (s != 0)
-        err_exit_en(s, "pthread_join");
-    s = pthread_join(t2, &res);
-    if (s != 0)
-        err_exit_en(s, "pthread_join");
-
-
-show_words(&(words.tree));
-    return 0;
-}*/
-/*
-static void * thread_func(void *arg)
-{
-    int idx = (int) arg;
-    int s;
-
-    //sleep(thread[idx].sleep_time);
-    printf("Thread %d terminating\n", idx);
-        if (nftw(DEFAULT_PATH, dir_tree, 20, FTW_CHDIR) == -1) {
-    perror("nftw");
-    s = pthread_mutex_lock(&thread_mutext);
-    if (s != 0)
-        err_exit_en(s, "pthread_mutex_lock");
-    }
-    num_unjoined++;
-    thread[idx].state = TS_TERMINATED;
-    s = pthread_mutex_unlock(&thread_mutext);
-    if (s != 0)
-        err_exit_en(s, "pthread_mutex_unlock");
-    s = pthread_cond_signal(&thread_died);
-    if (s != 0)
-        err_exit_en(s, "pthread_cond_signal");
-    return NULL;
-}
-
-int main(int argc, char *argv[])
-{
-    int s, idx;
-    tr_initialize(&(words.tree));
-
-    if (argc < 2 || strcmp(argv[1], "--help") == 0)
-        printf("USAGE: ...\n");
-    thread = calloc(argc - 1, sizeof(*thread));
-    if (thread == NULL)
-        exit(EXIT_FAILURE);
-    
-    for(idx = 0; idx < argc - 1; idx++) {
-        thread[idx].sleep_time = atoi(argv[idx + 1]);
-        thread[idx].state = TS_ALIVE;
-        s = pthread_create(&thread[idx].tid, NULL, thread_func, (void *) idx);
-        if (s != 0)
-        err_exit_en(s, "pthread_create");
-    }
-
-    tot_threads = argc - 1;
-    while (num_live > 0) {
-        s = pthread_mutex_lock(&thread_mutext);
-        if (s != 0)
-            err_exit_en(s, "pthread_mutex_lock");
-
-        while (num_unjoined == 0) {
-            s = pthread_cond_wait(&thread_died, &thread_mutext);
-            if ( s != 0)
-                err_exit_en(s, "pthread_cond_wait");
-        }
-
-        for (idx = 0; idx < tot_threads; idx++) {
-            if (thread[idx].state ==  TS_TERMINATED) {
-                s = pthread_join(thread[idx].tid, NULL);
-                if (s != 0)
-                    err_exit_en(s, "pthread_join");
-
-                thread[idx].state = TS_JOINED;
-                num_live--;
-                num_unjoined--;
-
-                printf("Reaped thread %d (num_live=%d)\n", idx, num_live);
-            }
-        }
-        s = pthread_mutex_unlock(&thread_mutext);
-        if (s != 0)
-            err_exit_en(s, "pthread_mutex_unlock");
-
-    }
-    show_words(&(words.tree));
-    return 0;
-}
-*/
