@@ -17,6 +17,9 @@
 
 typedef enum { FALSE, TRUE } Boolean;
 
+#define HANDLE_ERROR(msg) do { perror(msg); exit(EXIT_FAILURE); } while (0)
+#define HANDLE_ERROR_EN(en, msg) do { errno = en; perror(msg); exit(EXIT_FAILURE); } while (0)
+
 typedef struct		s_item {
   char word[LEN];
   unsigned int cnt_word;
