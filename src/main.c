@@ -5,7 +5,7 @@
 
 #include <stdarg.h>
 
-#define DEFAULT_PATH "/usr/share/man/man1"
+
 
 static pthread_cond_t thread_died = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t thread_mutext = PTHREAD_MUTEX_INITIALIZER;
@@ -14,8 +14,6 @@ static int tot_threads = 0;
 static int num_live = 0;
 static int num_unjoined = 0;
 
-pthread_t t[20000];
-int i=0;
 /*
 enum tstate{
     TS_ALIVE,
@@ -113,20 +111,41 @@ static void usage_error(const char *prog_name, char *msg)
   exit(EXIT_FAILURE);
 }
 
+
+
+
+
+static pthread_t t[MAXITEMS];
+static int i = 0;
+
+
+
+
+static void * threadFunc(void *arg)
+{
+    char *p = arg;
+    open_file(p, &(words));
+    return NULL;
+}
+
 static int dir_tree(const char *pathname, const struct stat *sbuf, int type, struct FTW *ftwb)
 {
-  if ((sbuf->st_mode & S_IFMT) == S_IFREG)
-    open_file(&pathname[ftwb->base], &(words));
+
+  if ((sbuf->st_mode & S_IFMT) == S_IFREG) {
+    pthread_create(&t[i++], NULL, threadFunc, (void *)&pathname[ftwb->base]);
+    while (i) {
+        pthread_join(t[--i], NULL);
+    }
+  }
   return 0;
 }
 
 int main(int argc, char **argv)
 {
-  int s, idx;
-
   if (argc > 2)
     usage_error(argv[0], NULL);
   tr_initialize(&(words));
+
   if (nftw(argc == 1 ? DEFAULT_PATH : argv[1], dir_tree, 20, FTW_CHDIR) == -1) {
     perror("nftw");
     usage_error(argv[0], NULL);
@@ -134,6 +153,6 @@ int main(int argc, char **argv)
 
 
 
- //show_words(&(words));
+    show_words(&(words));
   return 0;
 }

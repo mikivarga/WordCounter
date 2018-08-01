@@ -11,7 +11,7 @@ HEADER_FLAGS	:=	-I $(INC_DIR)
 
 CC:=gcc
 
-SRC =	parse_words.c words.c tree.c main.c
+SRC =	words.c tree.c main.c
 
 OBJ =	$(addprefix $(OBJ_DIR), $(SRC:.c=.o))
 

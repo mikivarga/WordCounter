@@ -13,11 +13,8 @@
 typedef enum { FALSE, TRUE } Boolean;
 
 #define BUF 100
-#define MAXITEMS 1000000
-
-
-
-char *str111[256];
+#define MAXITEMS 200000
+#define DEFAULT_PATH "/usr/share/man/man1"
 
 typedef struct		s_item {
   char word[BUF];
@@ -28,14 +25,13 @@ typedef struct		s_trnode {
   t_item item;
   struct s_trnode	*left;
   struct s_trnode	*right;
+  pthread_mutex_t mutex;
 }			t_trnode;
 
 typedef struct		s_tree {
   t_trnode *root;
   unsigned int size;
 }			t_tree;
-
-// t_tree words;
 
 void		tr_initialize(t_tree *ptr);
 Boolean		tr_is_empty(const t_tree *ptr);
