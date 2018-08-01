@@ -11,7 +11,7 @@
 #include <ctype.h>
 
 #define LEN 100
-#define BUF 2048
+#define BUF 1024
 #define MAXITEMS 200000
 #define DEFAULT_PATH "/usr/share/man/"
 
