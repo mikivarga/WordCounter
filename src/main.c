@@ -5,30 +5,6 @@
 
 #include <stdarg.h>
 
-
-
-static pthread_cond_t thread_died = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t thread_mutext = PTHREAD_MUTEX_INITIALIZER;
-
-static int tot_threads = 0;
-static int num_live = 0;
-static int num_unjoined = 0;
-
-/*
-enum tstate{
-    TS_ALIVE,
-    TS_TERMINATED,
-    TS_JOINED
-};
-
-static struct {
-    pthread_t tid;
-    enum tstate state;
-    int sleep_time
-} *thread;
-*/
-t_tree words;
-
 static char *ename[] = {
     /*   0 */ "", 
     /*   1 */ "EPERM", "ENOENT", "ESRCH", "EINTR", "EIO", "ENXIO", 
@@ -114,45 +90,37 @@ static void usage_error(const char *prog_name, char *msg)
 
 
 
-
+static t_tree words;
 static pthread_t t[MAXITEMS];
 static int i = 0;
-
-
-
 
 static void * threadFunc(void *arg)
 {
     char *p = arg;
-    open_file(p, &(words));
+    open_file(p, &words);
     return NULL;
 }
 
 static int dir_tree(const char *pathname, const struct stat *sbuf, int type, struct FTW *ftwb)
 {
-
-  if ((sbuf->st_mode & S_IFMT) == S_IFREG) {
-    pthread_create(&t[i++], NULL, threadFunc, (void *)&pathname[ftwb->base]);
-    while (i) {
-        pthread_join(t[--i], NULL);
+    if ((sbuf->st_mode & S_IFMT) == S_IFREG) {
+        pthread_create(&t[i++], NULL, threadFunc, (void *)&pathname[ftwb->base]);
+        while (i)
+            pthread_join(t[--i], NULL);
     }
-  }
   return 0;
 }
 
 int main(int argc, char **argv)
 {
-  if (argc > 2)
-    usage_error(argv[0], NULL);
-  tr_initialize(&(words));
-
-  if (nftw(argc == 1 ? DEFAULT_PATH : argv[1], dir_tree, 20, FTW_CHDIR) == -1) {
-    perror("nftw");
-    usage_error(argv[0], NULL);
-  }
-
-
-
-    show_words(&(words));
-  return 0;
+    if (argc > 2)
+        usage_error(argv[0], NULL);
+    tr_initialize(&words);
+    if (nftw(argc == 1 ? DEFAULT_PATH : argv[1], dir_tree, 20, FTW_CHDIR) == -1) {
+        perror("nftw");
+        usage_error(argv[0], NULL);
+    }
+    show_words(&words);
+    tr_delete_all(&words);
+    return 0;
 }

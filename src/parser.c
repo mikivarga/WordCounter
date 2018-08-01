@@ -24,14 +24,13 @@ static char *check_tokens(char *word_tmp)
 static void add_words(char *word_tmp, t_tree *ptr)
 {
     char *pword;
-
+    
     if (tr_is_full(ptr)) {
         puts("there is no а free place in a tree!");
-    }
-    else {
-        t_item item;//item tmp
+    } else {
+        t_item item;
 
-        while (*word_tmp) {//threads
+        while (*word_tmp) {
             word_tmp = check_tokens(word_tmp);
             if (*word_tmp) {
                 pword = item.word;
@@ -46,30 +45,46 @@ static void add_words(char *word_tmp, t_tree *ptr)
     }
 }
 
-static Boolean open_gz_file(char *patchname, t_tree *ptr)
+static void open_gz_file(char *words_tmp, char *patchname, t_tree *ptr)
 {
-    char cmd[4096] = "zcat ";
-    char word_tmp[2048];
+    char cmd[BUF] = "zcat ";   
     FILE *in;
 
     memcpy(cmd + 5, patchname, strlen(patchname) + 1);
     in = popen(cmd, "r");
-    if (!in) {
+    if (!in)
         fprintf(stderr, "%s: popen: %s\n", patchname, strerror(errno));
-        return FALSE;
+    while (fgets(words_tmp, BUF, in) != NULL) {
+        if (!tr_is_full(ptr))
+            add_words(words_tmp, ptr);
+        else
+            break ;
     }
-    while (fgets(word_tmp, 2048, in) != NULL) {
-        add_words(word_tmp, ptr);
+    pclose(in);
+}
+
+static void open_reg_file(char *words_tmp, char *patchname, t_tree *ptr)
+{
+    FILE *in;
+
+    in = fopen(patchname, "r");
+    if (!in)
+        fprintf(stderr, "%s: popen: %s\n", patchname, strerror(errno));
+    while (fgets(words_tmp, BUF, in) != NULL) {
+        if (!tr_is_full(ptr))
+            add_words(words_tmp, ptr);
+        else
+            break;
     }
-    pclose(in);//errr
-    return TRUE;
+    pclose(in);
 }
 
 Boolean open_file(char *patchname, t_tree *ptr)
 {
+    char tmp[BUF];
 
-    if (strstr(patchname, ".gz")) {
-        open_gz_file(patchname, ptr);//TRUE/FALSE
-    }
-
+    if (strstr(patchname, ".gz"))
+        open_gz_file(tmp, patchname, ptr);
+    else
+        open_reg_file(tmp, patchname, ptr);
 }

@@ -11,33 +11,34 @@ static t_pair tr_seek_item(const t_item *pi, const t_tree *ptr);
 static t_trnode *tr_make_node(const t_item *pi);
 static void tr_add_node(t_trnode *new_node, t_trnode *root);
 static void tr_in_order(const t_trnode * root, void (* pfun)(t_item item));
+static void	tr_delete_all_nodes(t_trnode *root);
 
-void		tr_initialize(t_tree *ptr)
+void tr_initialize(t_tree *ptr)
 {
 	ptr->root = NULL;
 	ptr->size = 0;
 }
 
-Boolean		tr_is_empty(const t_tree *ptr)
+Boolean	tr_is_empty(const t_tree *ptr)
 {
 	if (ptr->root == NULL)
 		return TRUE;
 	return FALSE;
 }
 
-Boolean		tr_is_full(const t_tree *ptr)
+Boolean	tr_is_full(const t_tree *ptr)
 {
 	if (ptr->size == MAXITEMS)
 		return TRUE;
 	return FALSE;
 }
 
-unsigned int	tr_item_count(const t_tree *ptr)
+unsigned int tr_item_count(const t_tree *ptr)
 {
 	return ptr->size;
 }
 
-Boolean		tr_add_item(const t_item  *pi, t_tree *ptr)
+Boolean	tr_add_item(const t_item  *pi, t_tree *ptr)
 {
     t_trnode *new_node;
 	t_pair seek;
@@ -62,14 +63,14 @@ Boolean		tr_add_item(const t_item  *pi, t_tree *ptr)
 	return TRUE;
 }
 
-static Boolean		tr_to_right(const t_item *pi1, const t_item *pi2)
+static Boolean tr_to_right(const t_item *pi1, const t_item *pi2)
 {
     if (strcmp(pi1->word, pi2->word) > 0)
 		return TRUE;
     return FALSE;
 }
 
-static Boolean		tr_to_left(const t_item *pi1, const t_item *pi2)
+static Boolean tr_to_left(const t_item *pi1, const t_item *pi2)
 {
     if (strcmp(pi1->word, pi2->word) < 0)
 		return TRUE;
@@ -143,5 +144,26 @@ static void tr_in_order(const t_trnode * root, void (*pfun)(t_item item))
 		tr_in_order(root->left, pfun);
 		(*pfun)(root->item);
 		tr_in_order(root->right, pfun);
+	}
+}
+
+void tr_delete_all(t_tree *ptr)
+{
+	if (ptr != NULL)
+		tr_delete_all_nodes(ptr->root);
+	ptr->root = NULL;
+	ptr->size = 0;
+}
+
+static void	tr_delete_all_nodes(t_trnode *root)
+{
+	t_trnode *pright;
+
+	if (root != NULL)
+	{
+		pright = root->right;
+		tr_delete_all_nodes(root->left);
+		free(root);
+		tr_delete_all_nodes(pright);
 	}
 }

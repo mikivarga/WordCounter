@@ -12,12 +12,13 @@
 
 typedef enum { FALSE, TRUE } Boolean;
 
-#define BUF 100
+#define LEN 100
+#define BUF 2048
 #define MAXITEMS 200000
 #define DEFAULT_PATH "/usr/share/man/man1"
 
 typedef struct		s_item {
-  char word[BUF];
+  char word[LEN];
   unsigned int cnt_word;
 }			t_item;
 
@@ -39,6 +40,7 @@ Boolean		tr_is_full(const t_tree *ptr);
 unsigned int	tr_item_count(const t_tree *ptr);
 Boolean		tr_add_item(const t_item  *pi, t_tree *ptr);
 void tr_traverse(const t_tree *ptr, void (*pfun)(t_item item));
+void			tr_delete_all(t_tree *ptree);
 
 Boolean open_file(char *patchname, t_tree * ptr);
 void show_words(const t_tree *ptr);
