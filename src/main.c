@@ -88,11 +88,11 @@ static void usage_error(const char *prog_name, char *msg)
 }
 
 
-
-
 static t_tree words;
+# if 1
 static pthread_t t[MAXITEMS];
 static int i = 0;
+
 
 static void * threadFunc(void *arg)
 {
@@ -110,6 +110,20 @@ static int dir_tree(const char *pathname, const struct stat *sbuf, int type, str
     }
   return 0;
 }
+#else
+
+static int dir_tree(const char *pathname, const struct stat *sbuf, int type, struct FTW *ftwb)
+{
+    char *patch;
+
+    patch = (char *)pathname;
+    if ((sbuf->st_mode & __S_IFMT) == S_IFREG) {
+        if (strstr(patch, ".o") == NULL)
+            open_file(patch, &words);
+    }
+  return 0;
+}
+#endif
 
 int main(int argc, char **argv)
 {

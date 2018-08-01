@@ -1,16 +1,24 @@
 #include "../inc/word_counter.h"
 
+static FILE *fp;
+
 static void print_item(t_item item)
 {
-  printf(" %s %d\n", item.word, item.cnt_word);
+    fprintf(fp, " %s %d\n", item.word, item.cnt_word);
 }
 
 void show_words(const t_tree *ptr)
 {
-    if (tr_is_empty(ptr))
+    if ((fp = fopen("res.txt", "w")) == NULL){
+        printf("Cannot open %s\n", "res.txt");
+        exit(EXIT_FAILURE);
+    }
+    if (tr_is_empty(ptr)) {
         puts("there is no words in tree!");
-    else
+    } else {
         tr_traverse(ptr, print_item);
+    }
+    fclose(fp);
 }
 
 static char *check_tokens(char *word_tmp)
@@ -24,10 +32,7 @@ static char *check_tokens(char *word_tmp)
 static void add_words(char *word_tmp, t_tree *ptr)
 {
     char *pword;
-    
-    if (tr_is_full(ptr)) {
-        puts("there is no а free place in a tree!");
-    } else {
+
         t_item item;
 
         while (*word_tmp) {
@@ -42,37 +47,40 @@ static void add_words(char *word_tmp, t_tree *ptr)
             }
             word_tmp = check_tokens(word_tmp);
         }
-    }
 }
 
-static void open_gz_file(char *words_tmp, char *patchname, t_tree *ptr)
+static void open_gz_file(char *patchname, t_tree *ptr)
 {
-    char cmd[BUF] = "zcat ";   
+    char cmd[BUF] = "zcat ";
+    char tmp[BUF];   
     FILE *in;
 
     memcpy(cmd + 5, patchname, strlen(patchname) + 1);
-    in = popen(cmd, "r");
-    if (!in)
-        fprintf(stderr, "%s: popen: %s\n", patchname, strerror(errno));
-    while (fgets(words_tmp, BUF, in) != NULL) {
+    if ((in = popen(cmd, "r")) == NULL) {
+        printf("Cannot open %s\n", patchname);
+        //exit(EXIT_FAILURE);
+    }
+    while (fgets(tmp, BUF, in) != NULL) {
         if (!tr_is_full(ptr))
-            add_words(words_tmp, ptr);
+            add_words(tmp, ptr);
         else
             break ;
     }
     pclose(in);
 }
 
-static void open_reg_file(char *words_tmp, char *patchname, t_tree *ptr)
+static void open_reg_file(char *patchname, t_tree *ptr)
 {
     FILE *in;
+    char tmp[BUF];
 
-    in = fopen(patchname, "r");
-    if (!in)
-        fprintf(stderr, "%s: popen: %s\n", patchname, strerror(errno));
-    while (fgets(words_tmp, BUF, in) != NULL) {
+    if ((in = fopen(patchname, "r")) == NULL) {
+        printf("Cannot open %s\n", patchname);
+        exit(EXIT_FAILURE);
+    }
+    while (fgets(tmp, BUF, in) != NULL) {
         if (!tr_is_full(ptr))
-            add_words(words_tmp, ptr);
+            add_words(tmp, ptr);
         else
             break;
     }
@@ -80,11 +88,9 @@ static void open_reg_file(char *words_tmp, char *patchname, t_tree *ptr)
 }
 
 Boolean open_file(char *patchname, t_tree *ptr)
-{
-    char tmp[BUF];
-
+{   
     if (strstr(patchname, ".gz"))
-        open_gz_file(tmp, patchname, ptr);
+        open_gz_file(patchname, ptr);
     else
-        open_reg_file(tmp, patchname, ptr);
+        open_reg_file(patchname, ptr);
 }

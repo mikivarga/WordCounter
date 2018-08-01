@@ -10,12 +10,12 @@
 #include <string.h>
 #include <ctype.h>
 
-typedef enum { FALSE, TRUE } Boolean;
-
 #define LEN 100
 #define BUF 2048
 #define MAXITEMS 200000
-#define DEFAULT_PATH "/usr/share/man/man1"
+#define DEFAULT_PATH "/usr/share/man/"
+
+typedef enum { FALSE, TRUE } Boolean;
 
 typedef struct		s_item {
   char word[LEN];
@@ -34,13 +34,13 @@ typedef struct		s_tree {
   unsigned int size;
 }			t_tree;
 
-void		tr_initialize(t_tree *ptr);
-Boolean		tr_is_empty(const t_tree *ptr);
-Boolean		tr_is_full(const t_tree *ptr);
-unsigned int	tr_item_count(const t_tree *ptr);
-Boolean		tr_add_item(const t_item  *pi, t_tree *ptr);
+void tr_initialize(t_tree *ptr);
+Boolean	tr_is_empty(const t_tree *ptr);
+Boolean	tr_is_full(const t_tree *ptr);
+unsigned int tr_item_count(const t_tree *ptr);
+Boolean	tr_add_item(const t_item  *pi, t_tree *ptr);
 void tr_traverse(const t_tree *ptr, void (*pfun)(t_item item));
-void			tr_delete_all(t_tree *ptree);
+void tr_delete_all(t_tree *ptree);
 
 Boolean open_file(char *patchname, t_tree * ptr);
 void show_words(const t_tree *ptr);
