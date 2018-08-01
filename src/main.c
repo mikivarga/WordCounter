@@ -88,8 +88,8 @@ static void usage_error(const char *prog_name, char *msg)
 }
 
 
-static t_tree words;
-# if 1
+t_tree words;
+# if 0
 static pthread_t t[MAXITEMS];
 static int i = 0;
 
