@@ -40,7 +40,7 @@ static void *thread_start(void *arg)
     t_info->state = TS_TERMINATED;
     while (fgets(tmp, BUF, t_info->fp) != NULL) {
         if (!tr_is_full(&words)) {
-            add_words(tmp, &words);
+            parse_words(tmp, &words);
         }
         else {
             break;
