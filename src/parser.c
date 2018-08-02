@@ -86,8 +86,6 @@ static void open_gz_file(char *patchname, t_tree *ptr)
 
 Boolean open_file(char *patchname, t_tree *ptr)
 {   
-    if (strstr(patchname, ".gz"))
+    //printf("OPEN %s\n", patchname);
         open_gz_file(patchname, ptr);
-    else
-        open_reg_file(patchname, ptr);
 }

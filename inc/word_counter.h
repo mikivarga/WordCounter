@@ -13,12 +13,26 @@
 #define LEN 100
 #define BUF 1024
 #define MAXITEMS 200000
+#define NUM_THREADS 3
 #define DEFAULT_PATH "/usr/share/man/"
 
 typedef enum { FALSE, TRUE } Boolean;
 
 #define HANDLE_ERROR(msg) do { perror(msg); exit(EXIT_FAILURE); } while (0)
 #define HANDLE_ERROR_EN(en, msg) do { errno = en; perror(msg); exit(EXIT_FAILURE); } while (0)
+
+enum tstate {                   /* Thread states */
+    TS_ALIVE,                   /* Thread is alive */
+    TS_TERMINATED,              /* Thread terminated, not yet joined */
+    TS_JOINED                   /* Thread terminated, and joined */
+};
+
+struct thread_info {
+    pthread_t thread_id;
+    enum tstate state;
+    char *argv_string;
+    int num;
+};
 
 typedef struct		s_item {
   char word[LEN];
@@ -29,7 +43,6 @@ typedef struct		s_trnode {
   t_item item;
   struct s_trnode	*left;
   struct s_trnode	*right;
-  pthread_mutex_t mutex;
 }			t_trnode;
 
 typedef struct		s_tree {
