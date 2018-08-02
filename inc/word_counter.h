@@ -58,8 +58,6 @@ unsigned int tr_item_count(const t_tree *ptr);
 Boolean	tr_add_item(const t_item  *pi, t_tree *ptr);
 void tr_traverse(const t_tree *ptr, void (*pfun)(t_item item));
 void tr_delete_all(t_tree *ptree);
-
-Boolean open_gz_file(char *patchname, t_tree * ptr);
 void parse_words(char *word_tmp, t_tree *ptr);
 void save_to_the_file(const t_tree *ptr);
 
