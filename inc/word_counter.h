@@ -21,10 +21,10 @@ typedef enum { FALSE, TRUE } Boolean;
 #define HANDLE_ERROR(msg) do { perror(msg); exit(EXIT_FAILURE); } while (0)
 #define HANDLE_ERROR_EN(en, msg) do { errno = en; perror(msg); exit(EXIT_FAILURE); } while (0)
 
-enum tstate {                   /* Thread states */
-    TS_ALIVE,                   /* Thread is alive */
-    TS_TERMINATED,              /* Thread terminated, not yet joined */
-    TS_JOINED                   /* Thread terminated, and joined */
+enum tstate {
+    TS_ALIVE,
+    TS_TERMINATED,
+    TS_JOINED
 };
 
 struct thread_info {
