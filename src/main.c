@@ -15,13 +15,19 @@ static t_tree words;
 
 static void *thread_start(void *arg)
 {
-    struct thread_info *t_info = arg;;
+    struct thread_info *t_info = arg;
     int s;
+    char cmd[BUF] = "zcat ";
+    char tmp[BUF];
 
+    memcpy(cmd + 5, t_info->argv_string, strlen(t_info->argv_string) + 1);
+    if ((t_info->fp = popen(cmd, "r")) == NULL) {
+        HANDLE_ERROR("popen() failed\n");
+    }
 #if DEBUG
     printf("thread terminating %d\n", t_info->num);
 #endif
-    
+ 
     s = pthread_mutex_lock(&threadMutex);
     if (s != 0)
         HANDLE_ERROR_EN(s, "mutex_lock");
@@ -32,16 +38,25 @@ static void *thread_start(void *arg)
 #endif
     
     t_info->state = TS_TERMINATED;
-    open_file(t_info->argv_string, &words);
+    while (fgets(tmp, BUF, t_info->fp) != NULL) {
+        if (!tr_is_full(&words)) {
+            add_words(tmp, &words);
+        }
+        else {
+            break;
+        }
+    }
     s = pthread_mutex_unlock(&threadMutex);
     if (s != 0)
         HANDLE_ERROR_EN(s, "mutex_unlock");
     s = pthread_cond_signal(&threadDied);
     if (s != 0)
         HANDLE_ERROR_EN(s, "cond_sign");
-
-    return t_info->argv_string;
+    pclose(t_info->fp);
+    free(t_info->argv_string);
+    return NULL;
 }
+
 
 static int entcmp(const FTSENT **a, const FTSENT **b)
 {
@@ -57,7 +72,7 @@ save_thread_info(int tnum, char *path, Boolean state, struct thread_info *tinfo)
 }
 
 static void
-waiting_thtreads(int s, int tnum, void *res, struct thread_info *tinfo)
+waiting_thtreads(int s, int tnum, struct thread_info *tinfo)
 {
     while (num_live > 0) {
         s = pthread_mutex_lock(&threadMutex);
@@ -70,13 +85,13 @@ waiting_thtreads(int s, int tnum, void *res, struct thread_info *tinfo)
         }
         for (tnum = 0; tnum < tot_threads; tnum++) {
             if (tinfo[tnum].state == TS_TERMINATED) {
-                s = pthread_join(tinfo[tnum].thread_id, &res);
+                s = pthread_join(tinfo[tnum].thread_id, NULL);
                 if (s != 0)
                     HANDLE_ERROR_EN(s, "pthread_join");
                 tinfo[tnum].state = TS_JOINED;
                 num_live--;
                 num_unjoined--;
-                free(res);
+
 #if DEBUG
     printf("Reaped thread %d  (num live=%d)\n", tnum, num_live);
 #endif
@@ -95,7 +110,6 @@ static void dir_tree(char *dir, const char *pattern)
 	char *argv[] = { dir, NULL };
     struct thread_info *tinfo;
     int s, tnum;
-    void *res;
     
 	tree = fts_open(argv, FTS_LOGICAL | FTS_NOSTAT, entcmp);
 	if (tree == NULL)
@@ -119,7 +133,7 @@ static void dir_tree(char *dir, const char *pattern)
             }
         }
         num_live = tot_threads;
-        waiting_thtreads(s, tnum, res, tinfo);
+        waiting_thtreads(s, tnum, tinfo);
 #if DEBUG
     printf("\n");
 #endif
@@ -135,7 +149,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "Usage: %s [directory-path]\n", argv[0]);
     tr_initialize(&words);
     dir_tree(argc == 1 ? DEFAULT_PATH : argv[1], "*.gz");
-    show_words(&words);
+    save_to_the_file(&words);
     tr_delete_all(&words);
     return 0;
 }
