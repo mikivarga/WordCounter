@@ -13,12 +13,6 @@ static int num_unjoined = 0;
 static int dir_is_empty = 0;
 static t_tree words;
 
-int
-entcmp(const FTSENT **a, const FTSENT **b)
-{
-	return strcmp((*a)->fts_name, (*b)->fts_name);
-}
-
 static void *thread_start(void *arg)
 {
     struct thread_info *t_info = arg;;
@@ -49,6 +43,51 @@ static void *thread_start(void *arg)
     return t_info->argv_string;
 }
 
+static int entcmp(const FTSENT **a, const FTSENT **b)
+{
+	return strcmp((*a)->fts_name, (*b)->fts_name);
+}
+
+static void
+save_thread_info(int tnum, char *path, Boolean state, struct thread_info *tinfo)
+{
+    tinfo[tnum].num = tnum;
+    tinfo[tnum].argv_string = strdup(path);
+    tinfo[tnum].state = state;
+}
+
+static void
+waiting_thtreads(int s, int tnum, void *res, struct thread_info *tinfo)
+{
+    while (num_live > 0) {
+        s = pthread_mutex_lock(&threadMutex);
+        if (s != 0)
+            HANDLE_ERROR_EN(s, "mutex_lock");
+        while (num_unjoined == 0) {
+            s = pthread_cond_wait(&threadDied, &threadMutex);
+            if (s != 0)
+                HANDLE_ERROR_EN(s, "pthread_cond_wait");
+        }
+        for (tnum = 0; tnum < tot_threads; tnum++) {
+            if (tinfo[tnum].state == TS_TERMINATED) {
+                s = pthread_join(tinfo[tnum].thread_id, &res);
+                if (s != 0)
+                    HANDLE_ERROR_EN(s, "pthread_join");
+                tinfo[tnum].state = TS_JOINED;
+                num_live--;
+                num_unjoined--;
+                free(res);
+#if DEBUG
+    printf("Reaped thread %d  (num live=%d)\n", tnum, num_live);
+#endif
+            }
+        }
+        s = pthread_mutex_unlock(&threadMutex);
+        if (s != 0)
+            HANDLE_ERROR_EN(s, "mutex_unlock");
+    }
+}
+
 static void dir_tree(char *dir, const char *pattern)
 {
     FTS *tree;
@@ -71,9 +110,7 @@ static void dir_tree(char *dir, const char *pattern)
             }
             if (fnmatch(pattern, f->fts_name, FNM_PERIOD) == 0) {
                 tot_threads++;
-                tinfo[tnum].num = tnum;
-                tinfo[tnum].argv_string = strdup(f->fts_path);
-                tinfo[tnum].state = TS_ALIVE;
+                save_thread_info(tnum, f->fts_path, TS_ALIVE, tinfo);
                 s = pthread_create(&tinfo[tnum].thread_id, NULL, &thread_start, &tinfo[tnum]);
                 if (s != 0)
                     HANDLE_ERROR_EN(s, "pthread_create");
@@ -81,38 +118,11 @@ static void dir_tree(char *dir, const char *pattern)
                 tnum--;
             }
         }
-
         num_live = tot_threads;
-        while (num_live > 0) {
-            s = pthread_mutex_lock(&threadMutex);
-            if (s != 0)
-                HANDLE_ERROR_EN(s, "mutex_lock");
-            while (num_unjoined == 0) {
-                s = pthread_cond_wait(&threadDied, &threadMutex);
-                if (s != 0)
-                    HANDLE_ERROR_EN(s, "pthread_cond_wait");
-            }
-            for (tnum = 0; tnum < tot_threads; tnum++) {
-                if (tinfo[tnum].state == TS_TERMINATED) {
-                    s = pthread_join(tinfo[tnum].thread_id, &res);
-                    if (s != 0)
-                        HANDLE_ERROR_EN(s, "pthread_join");
-                    tinfo[tnum].state = TS_JOINED;
-                    num_live--;
-                    num_unjoined--;
-                    free(res);
-#if DEBUG
-    printf("Repead thread %d  (numLive=%d)\n", tnum, numLive);
-#endif
-                }
-            }
-            s = pthread_mutex_unlock(&threadMutex);
-            if (s != 0)
-                HANDLE_ERROR_EN(s, "mutex_unlock");
+        waiting_thtreads(s, tnum, res, tinfo);
 #if DEBUG
     printf("\n");
 #endif
-        }
         if (dir_is_empty)
             break ;
     }
