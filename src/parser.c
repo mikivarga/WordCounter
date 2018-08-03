@@ -23,7 +23,7 @@ void save_to_the_file(const t_tree *ptr)
 static char *check_tokens(char *word_tmp)
 {
     while (*word_tmp && !isalpha(*word_tmp))
-        *word_tmp++;
+        word_tmp++;
 
     return word_tmp;
 }

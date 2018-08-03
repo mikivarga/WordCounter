@@ -1,6 +1,3 @@
-#include <fnmatch.h>
-#include <fts.h>
-#include <err.h>
 #include "../inc/word_counter.h"
 
 #define DEBUG 0
@@ -67,7 +64,7 @@ save_thread_info(int tnum, char *path, Boolean state, struct thread_info *tinfo)
 {
     tinfo[tnum].num = tnum;
     strncpy(tinfo[tnum].argv_string, path, BUF - 1);
-    tinfo[tnum].argv_string[BUF - 1] = '\0';
+    tinfo[tnum].argv_string[BUF -1] = '\0';
     tinfo[tnum].state = state;
 }
 

@@ -3,6 +3,8 @@
 
 #include <pthread.h>
 #include <sys/types.h>
+#include <fnmatch.h>
+#include <fts.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
