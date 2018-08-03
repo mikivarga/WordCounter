@@ -53,7 +53,6 @@ static void *thread_start(void *arg)
     if (s != 0)
         HANDLE_ERROR_EN(s, "cond_sign");
     pclose(t_info->fp);
-    free(t_info->argv_string);
     return NULL;
 }
 
@@ -67,7 +66,8 @@ static void
 save_thread_info(int tnum, char *path, Boolean state, struct thread_info *tinfo)
 {
     tinfo[tnum].num = tnum;
-    tinfo[tnum].argv_string = strdup(path);
+    strncpy(tinfo[tnum].argv_string, path, BUF - 1);
+    tinfo[tnum].argv_string[BUF - 1] = '\0';
     tinfo[tnum].state = state;
 }
 

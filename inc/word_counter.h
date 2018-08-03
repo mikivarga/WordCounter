@@ -13,7 +13,7 @@
 #define LEN 100
 #define BUF 1024
 #define MAXITEMS 200000
-#define NUM_THREADS 3
+#define NUM_THREADS 10
 #define DEFAULT_PATH "/usr/share/man/"
 
 typedef enum { FALSE, TRUE } Boolean;
@@ -30,7 +30,7 @@ enum tstate {
 struct thread_info {
     pthread_t thread_id;
     enum tstate state;
-    char *argv_string;
+    char argv_string[BUF];
     FILE *fp;
     int num;
 };
