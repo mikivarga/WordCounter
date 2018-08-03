@@ -108,7 +108,7 @@ static void dir_tree(char *dir, const char *pattern)
     FTS *tree;
 	FTSENT *f;
 	char *argv[] = { dir, NULL };
-    struct thread_info *tinfo;
+    struct thread_info tinfo[NUM_THREADS];
     int s, tnum;
     
 	tree = fts_open(argv, FTS_LOGICAL | FTS_NOSTAT, entcmp);
@@ -116,7 +116,6 @@ static void dir_tree(char *dir, const char *pattern)
 		HANDLE_ERROR("fts_open");
     while(1) {
         tot_threads = num_live = num_unjoined = 0;
-        tinfo = calloc(NUM_THREADS, sizeof(struct thread_info));
         for(tnum = 0; tnum < NUM_THREADS; tnum++) {
 	        if (!(f = fts_read(tree))) {
                 dir_is_empty = 1;
