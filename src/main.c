@@ -2,6 +2,7 @@
 
 #define DEBUG 0
 
+#define POPEN_FMT "zcat %s 2> /dev/null"
 static pthread_cond_t threadDied = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t threadMutex = PTHREAD_MUTEX_INITIALIZER;
 static int tot_threads = 0;
@@ -10,15 +11,31 @@ static int num_unjoined = 0;
 static int dir_is_empty = 0;
 static t_tree words;
 
-static void *thread_start(void *arg)
+static void wait_status(int status)
+{
+    if (WIFEXITED(status)) {
+        fprintf(stderr, "child exited, status=%d\n", WEXITSTATUS(status));
+    } else if (WIFSIGNALED(status)) {
+        fprintf(stderr, "child killed by signal %d (%s)\n",
+        WTERMSIG(status), strsignal(WTERMSIG(status)));
+    } else if (WIFSTOPPED(status)) {
+        fprintf(stderr, "child stopped by signal %d (%s)\n",
+        WSTOPSIG(status), strsignal(WSTOPSIG(status)));
+    } else {
+        printf("what happened to this child? (status=%x)\n",
+        (unsigned int) status);
+    }
+}
+
+void *thread_start(void *arg)
 {
     struct thread_info *t_info = arg;
-    int s;
-    char cmd[BUF] = "zcat ";
-    char tmp[BUF];
+    int s, status;
+    char popen_cmd[BUF_SIZE];
+    char tmp[BUF_SIZE];
 
-    memcpy(cmd + 5, t_info->argv_string, strlen(t_info->argv_string) + 1);
-    if ((t_info->fp = popen(cmd, "r")) == NULL) {
+    snprintf(popen_cmd, BUF_SIZE, POPEN_FMT, t_info->argv_string);
+    if ((t_info->fp = popen(popen_cmd, "r")) == NULL) {
         HANDLE_ERROR("popen() failed\n");
     }
 #if DEBUG
@@ -35,7 +52,7 @@ static void *thread_start(void *arg)
 #endif
     
     t_info->state = TS_TERMINATED;
-    while (fgets(tmp, BUF, t_info->fp) != NULL) {
+    while (fgets(tmp, BUF_SIZE, t_info->fp) != NULL) {
         if (!tr_is_full(&words)) {
             parse_words(tmp, &words);
         }
@@ -49,7 +66,9 @@ static void *thread_start(void *arg)
     s = pthread_cond_signal(&threadDied);
     if (s != 0)
         HANDLE_ERROR_EN(s, "cond_sign");
-    pclose(t_info->fp);
+    if ((status = pclose(t_info->fp)) == -1) {
+        wait_status(status);
+    }
     return NULL;
 }
 
@@ -63,8 +82,8 @@ static void
 save_thread_info(int tnum, char *path, Boolean state, struct thread_info *tinfo)
 {
     tinfo[tnum].num = tnum;
-    strncpy(tinfo[tnum].argv_string, path, BUF - 1);
-    tinfo[tnum].argv_string[BUF -1] = '\0';
+    strncpy(tinfo[tnum].argv_string, path, BUF_SIZE - 1);
+    tinfo[tnum].argv_string[BUF_SIZE -1] = '\0';
     tinfo[tnum].state = state;
 }
 

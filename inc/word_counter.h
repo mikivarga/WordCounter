@@ -13,7 +13,7 @@
 #include <ctype.h>
 
 #define LEN 100
-#define BUF 1024
+#define BUF_SIZE 1024
 #define MAXITEMS 200000
 #define NUM_THREADS 10
 #define DEFAULT_PATH "/usr/share/man/"
@@ -32,7 +32,7 @@ enum tstate {
 struct thread_info {
     pthread_t thread_id;
     enum tstate state;
-    char argv_string[BUF];
+    char argv_string[BUF_SIZE];
     FILE *fp;
     int num;
 };
